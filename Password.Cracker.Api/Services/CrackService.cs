@@ -10,13 +10,21 @@ public class CrackService
 
     public void Crack(string hash, string alph, int len)
     {
+        int threadCount = Environment.ProcessorCount;
         if (currentCrack != null) return;
-        currentCrack = new CrackUtils(alph, len, hash);
-        Task.Run(async () =>
+        currentCrack = new CrackUtils(alph, len, hash, threadCount);
+        currentCrack.CrackAsync();
+    }
+
+    public void StopCurrentAttempt()
+    {
+        if (currentCrack == null)
         {
-            int threadCount = Environment.ProcessorCount;
-            await currentCrack.CrackAsync(threadCount);
-        });
+            return;
+        }
+        
+        currentCrack.Dispose();
+        currentCrack = null;
     }
 
     public string? GetResult()

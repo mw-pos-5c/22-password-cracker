@@ -23,21 +23,21 @@ public class Program
         byte[] pw;
 
         // pw0 - snow
-        length = 4;
-        alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz");
-        pw = pw0;
+        //length = 4;
+        //alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz");
+        //pw = pw0;
 
         // pw1 - HTLGKR
-        // length = 6;
-        // alphabet = CrackUtils.PrepareAlphabet("abcdefghijklmnopqrstuvwxyz".ToUpper());
-        // pw = pw1;
+         length = 6;
+         alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper());
+         pw = pw1;
 
         // p2 - CoV19
         //length = 5;
-        //alphabet = ShaUtils.PrepareAlphabet("abcdefghijklmnopqrstuvwxyz".ToUpper() + "abcdefghijklmnopqrstuvwxyz" + "0123456789");
+        //alphabet = ShaUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper() + "abcdefghijklmnopqrstuvwxyz" + "0123456789");
         //pw = pw2;
-
-        var crack = new CrackUtils(alphabet, length, pw);
+        int threadCount = Environment.ProcessorCount;
+        var crack = new CrackUtils(alphabet, length, pw, threadCount);
 
         //crack.Crack(0, 100);
 
@@ -56,15 +56,15 @@ public class Program
                 Thread.Sleep(1000);
             }
         });
-
-        int threadCount = Environment.ProcessorCount;
-
+        
         var stopwatch = new Stopwatch();
 
         stopwatch.Start();
-        string result = crack.CrackAsync(threadCount).Result;
+        crack.CrackAsync();
+        string result = crack.GetResultAsync().Result;
         stopwatch.Stop();
 
+        
         Console.WriteLine("Result: " + result);
 
         Console.WriteLine("Took: " + stopwatch.ElapsedMilliseconds + " ms");

@@ -59,6 +59,7 @@ namespace Password.Cracker.Gui
         private void StatusUpdate(double perCent)
         {
             progressBar.Value = perCent;
+            resultLabel.Content = (perCent*100)+ " %";
         }
 
         private void PwFound(string pw)

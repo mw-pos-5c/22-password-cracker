@@ -38,8 +38,7 @@ public class PasswordCrackerHostedService : IHostedService
         {
             return;
         }
-        
-        
+
         double perCent = current.PerCent;
 
         Console.WriteLine("Progress: "+perCent);
@@ -50,6 +49,10 @@ public class PasswordCrackerHostedService : IHostedService
         if (result != null)
         {
             hub.Clients.All.SendAsync("FoundPassword", result).Wait();
+        } else if (current.ThreadsRunning == 0)
+        {
+            hub.Clients.All.SendAsync("FoundPassword", "* NO MATCH *").Wait();
+            crackService.StopCurrentAttempt();
         }
     }
 
