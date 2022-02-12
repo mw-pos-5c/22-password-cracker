@@ -1,14 +1,12 @@
 ﻿#region usings
 
-using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 #endregion
 
-namespace Password.Cracker.Cli;
+namespace Password.Cracker.Utils;
 
 public class CrackUtils
 {
@@ -29,10 +27,16 @@ public class CrackUtils
         Total = (long) Math.Pow(alphabet.Length, length);
     }
 
+    public CrackUtils(string alph, int len, string hash) : this(GetBytes(alph), len, HexStringToByte(hash))
+    {
+        
+    }
+
     public bool Found { get; private set; }
     public string Result { get; private set; }
     public long Total { get; }
     public long TotalHashed { get; private set; }
+    public double PerCent => (double) TotalHashed / Total;
 
     public byte[] CalcStart(long start)
     {
@@ -132,12 +136,12 @@ public class CrackUtils
         return data;
     }
 
-    public static byte[] PrepareAlphabet(string input)
+    public static byte[] GetBytes(string input)
     {
-        return Encoding.UTF8.GetBytes(input.ToCharArray());
+        return Encoding.UTF8.GetBytes(input);
     }
-
-    private bool CmpBytes(byte[] arr1, byte[] arr2)
+    
+    private static bool CmpBytes(byte[] arr1, byte[] arr2)
     {
         for (var i = 0; i < arr1.Length; i++)
         {
@@ -145,5 +149,20 @@ public class CrackUtils
         }
 
         return true;
+    }
+    
+    public static string WordlistCrack(string[] input, byte[] hash)
+    {
+        var sha256 = SHA256.Create();
+        
+        for (var i = 0; i < input.Length; i++)
+        {
+            if (CmpBytes(sha256.ComputeHash(Encoding.UTF8.GetBytes(input[i])), hash))
+            {
+                return input[i];
+            }
+        }
+        
+        return null;
     }
 }
