@@ -15,45 +15,57 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        
+
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4*" />
         </Grid.ColumnDefinitions>
 
-        <Label Name="statusLabel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" 
+        <Label Name="statusLabel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                HorizontalContentAlignment="Center"
                VerticalContentAlignment="Center"
-               FontSize="40">Not Connected</Label>
-        
+               FontSize="40">
+            Not Connected
+        </Label>
+
         <Label Grid.Row="1" Grid.Column="0"
-               HorizontalContentAlignment="Right"
-               VerticalContentAlignment="Center">Password-Hash: </Label>
+               HorizontalContentAlignment="Left"
+               VerticalContentAlignment="Center">
+            Password-Hash:
+        </Label>
         <TextBox Name="hashLabel" Grid.Row="1" Grid.Column="1" Margin="10">
             3086E346353248775A2C5D74E36A9C9B9BD226A1EE401F830AC499633DC00031
         </TextBox>
-        
+
         <Label Grid.Row="2" Grid.Column="0"
-               HorizontalContentAlignment="Right"
-               VerticalContentAlignment="Center">Alphabet: </Label>
+               HorizontalContentAlignment="Left"
+               VerticalContentAlignment="Center">
+            Alphabet:
+        </Label>
         <TextBox Name="alpLabel" Grid.Row="2" Grid.Column="1" Margin="10">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
         </TextBox>
-        
+
         <Label Grid.Row="3" Grid.Column="0"
-               HorizontalContentAlignment="Right"
-               VerticalContentAlignment="Center">Length: </Label>
+               HorizontalContentAlignment="Left"
+               VerticalContentAlignment="Center">
+            Length:
+        </Label>
         <TextBox Name="lenLabel" Grid.Row="3" Grid.Column="1" Margin="10">6</TextBox>
-        
-        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" 
+
+        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
                 Margin="10" FontSize="20"
-                Click="ButtonBase_OnClick">Crack</Button>
-        
+                Click="ButtonBase_OnClick">
+            Crack
+        </Button>
+
         <ProgressBar Name="progressBar" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
-                     Margin="10" Maximum="1" Minimum="0"></ProgressBar>
-        
+                     Margin="10" Maximum="1" Minimum="0" />
+
         <Label Name="resultLabel" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-               FontSize="20">???</Label>
+               FontSize="20">
+            ???
+        </Label>
     </Grid>
 </Window>

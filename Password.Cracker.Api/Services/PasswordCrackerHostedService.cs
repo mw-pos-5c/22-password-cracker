@@ -1,15 +1,25 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿#region usings
+
+using Microsoft.AspNetCore.SignalR;
 
 using Password.Cracker.Api.Hubs;
 using Password.Cracker.Utils;
+
+#endregion
 
 namespace Password.Cracker.Api.Services;
 
 public class PasswordCrackerHostedService : IHostedService
 {
-    
-    private readonly IHubContext<CrackerHub> hub;
+    #region Constants and Fields
+
     private readonly CrackService crackService;
+
+    private readonly IHubContext<CrackerHub> hub;
+
+    private PeriodicTimer timer;
+
+    #endregion
 
     public PasswordCrackerHostedService(IHubContext<CrackerHub> hub, CrackService crackService)
     {
@@ -19,15 +29,23 @@ public class PasswordCrackerHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        Task.Run(() =>
-        {
-            while (true) 
+        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+        Task.Run(async () =>
             {
-                SendCrackStatusUpdate();
-                Thread.Sleep(500);
-            }
-        });
-        
+                while (await timer.WaitForNextTickAsync())
+                {
+                    SendCrackStatusUpdate();
+                    Thread.Sleep(500);
+                }
+            },
+            cancellationToken);
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        timer?.Dispose();
         return Task.CompletedTask;
     }
 
@@ -41,23 +59,19 @@ public class PasswordCrackerHostedService : IHostedService
 
         double perCent = current.PerCent;
 
-        Console.WriteLine("Progress: "+perCent);
-        
+        Console.WriteLine("Progress: " + perCent);
+
         hub.Clients.All.SendAsync("StatusUpdate", perCent).Wait();
 
         string? result = crackService.GetResult();
         if (result != null)
         {
             hub.Clients.All.SendAsync("FoundPassword", result).Wait();
-        } else if (current.ThreadsRunning == 0)
+        }
+        else if (current.ThreadsRunning == 0 && current.Ready)
         {
             hub.Clients.All.SendAsync("FoundPassword", "* NO MATCH *").Wait();
             crackService.StopCurrentAttempt();
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

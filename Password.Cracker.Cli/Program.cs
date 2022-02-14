@@ -1,8 +1,11 @@
-﻿using System.Diagnostics;
+﻿#region usings
 
-using HtmlAgilityPack;
+using System.Diagnostics;
 
 using Password.Cracker.Utils;
+
+#endregion
+
 // ReSharper disable UnusedVariable
 
 namespace Password.Cracker.Cli;
@@ -28,9 +31,9 @@ public class Program
         //pw = pw0;
 
         // pw1 - HTLGKR
-         length = 6;
-         alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper());
-         pw = pw1;
+        length = 6;
+        alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper());
+        pw = pw1;
 
         // p2 - CoV19
         //length = 5;
@@ -39,8 +42,9 @@ public class Program
         int threadCount = Environment.ProcessorCount;
         var crack = new CrackUtils(alphabet, length, pw, threadCount);
 
-        //crack.Crack(0, 100);
+        crack.Crack(0, 100, out int x);
 
+        /*
         Task.Run(() =>
         {
             long last = 0;
@@ -64,16 +68,17 @@ public class Program
         string result = crack.GetResultAsync().Result;
         stopwatch.Stop();
 
+
         
         Console.WriteLine("Result: " + result);
 
         Console.WriteLine("Took: " + stopwatch.ElapsedMilliseconds + " ms");
 
-        var web = new HtmlWeb();
-        HtmlDocument doc = web.Load("https://de.wikipedia.org/wiki/Liste_von_Fabelwesen");
-        HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//*[@id=\"mw-content-text\"]/div/ul/li/a");
-        string[] wordlist = nodes.Select(node => node.InnerHtml).ToArray();
+        Console.WriteLine(crack.Total);
+        Console.WriteLine(crack.TotalHashed);
+        
+*/
 
-        Console.WriteLine(CrackUtils.WordlistCrack(wordlist, pw3));
+        //Console.WriteLine(crackFabel.WordlistCrack(FabelwesenUtils.GetFabelwesen(), pw3));
     }
 }

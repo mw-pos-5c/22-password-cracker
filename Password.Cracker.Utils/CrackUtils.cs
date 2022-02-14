@@ -14,9 +14,10 @@ public class CrackUtils : IDisposable
 
     private readonly byte[] alphabet;
     private readonly int length;
+    private readonly int[] sharedIterators;
     private readonly byte[] target;
     private readonly Thread?[] threads;
-    private readonly int[] globalIterators;
+
     #endregion
 
     public CrackUtils(byte[] alphabet, int length, byte[] target, int threadCount)
@@ -24,23 +25,25 @@ public class CrackUtils : IDisposable
         this.alphabet = alphabet;
         this.length = length;
         this.target = target;
-        this.threads = new Thread[threadCount];
-        this.globalIterators = new int[threadCount];
+        threads = new Thread[threadCount];
+        sharedIterators = new int[threadCount];
 
         Total = (long) Math.Pow(alphabet.Length, length);
     }
 
-    public CrackUtils(string alph, int len, string hash, int threadCount) : this(GetBytes(alph), len, HexStringToByte(hash), threadCount)
+    public CrackUtils(string alph, int len, string hash, int threadCount)
+        : this(GetBytes(alph), len, HexStringToByte(hash), threadCount)
     {
-        
     }
 
-    public int ThreadsRunning => threads.Count(thread => thread != null && thread.IsAlive);
     public bool Found { get; private set; }
-    public string Result { get; private set; }
-    public long Total { get; }
-    public long TotalHashed => globalIterators.Sum();
     public double PerCent => (double) TotalHashed / Total;
+    public bool Ready { get; private set; }
+    public string Result { get; private set; }
+
+    public int ThreadsRunning => threads.Count(thread => thread != null && thread.IsAlive);
+    public long Total { get; }
+    public long TotalHashed => sharedIterators.Sum();
 
     public byte[] CalcStart(long start)
     {
@@ -61,7 +64,7 @@ public class CrackUtils : IDisposable
     public void Crack(long from, long to, out int iterator)
     {
         using var sha256 = SHA256.Create();
-        
+
         byte[] currentTry = CalcStart(from);
         var result = new byte[length];
 
@@ -69,13 +72,12 @@ public class CrackUtils : IDisposable
         {
             result[i] = alphabet[0];
         }
-        
+
         for (iterator = 0; iterator < to - from; iterator++)
         {
             if (Found) return;
 
             byte[] hash = sha256.ComputeHash(result);
-            
 
             if (CmpBytes(hash, target))
             {
@@ -89,11 +91,12 @@ public class CrackUtils : IDisposable
             {
                 if (currentTry[i] == alphabet.Length)
                 {
-                    currentTry[i] = 0;
-
                     if (i == length - 1)
+                    {
                         return;
+                    }
 
+                    currentTry[i] = 0;
                     ++currentTry[i + 1];
                     result[i] = alphabet[currentTry[i]];
                 }
@@ -117,15 +120,54 @@ public class CrackUtils : IDisposable
         for (var i = 0; i < count; i++)
         {
             from = to;
-            to += piece;
-            
+
+            to = i != count - 1
+                ? to + piece
+                : Total;
+
             long from1 = from;
             long to1 = to;
             int i1 = i;
-            
-            threads[i] = new Thread(() => Crack(from1, to1, out globalIterators[i1]));
-            threads[i].Start();
+
+            threads[i] = new Thread(() =>
+            {
+                Crack(from1, to1, out sharedIterators[i1]);
+
+                // Console.WriteLine($"[{from1} - {to1}] Not hashed {(to1 - from1 - sharedIterators[i1])}");
+            });
+            threads[i]?.Start();
         }
+
+        Ready = true;
+    }
+
+    public void Dispose()
+    {
+        Result = "";
+        Found = true;
+
+        foreach (Thread? thread in threads)
+        {
+            thread?.Join();
+        }
+    }
+
+    public static byte[] GetBytes(string input)
+    {
+        return Encoding.UTF8.GetBytes(input);
+    }
+
+    public async Task<string?> GetResultAsync()
+    {
+        await Task.Run(() =>
+        {
+            foreach (Thread? thread in threads)
+            {
+                thread?.Join();
+            }
+        });
+
+        return Result;
     }
 
     public static byte[] HexStringToByte(string hex)
@@ -140,11 +182,24 @@ public class CrackUtils : IDisposable
         return data;
     }
 
-    public static byte[] GetBytes(string input)
+    public void WordlistCrack(string[] wordlist)
     {
-        return Encoding.UTF8.GetBytes(input);
+        var sha256 = SHA256.Create();
+
+        foreach (string word in wordlist)
+        {
+            if (CmpBytes(sha256.ComputeHash(Encoding.UTF8.GetBytes(word)), target))
+            {
+                string result = word;
+                Found = true;
+                Result = result;
+                break;
+            }
+        }
+
+        Ready = true;
     }
-    
+
     private static bool CmpBytes(byte[] arr1, byte[] arr2)
     {
         for (var i = 0; i < arr1.Length; i++)
@@ -153,44 +208,5 @@ public class CrackUtils : IDisposable
         }
 
         return true;
-    }
-    
-    public static string? WordlistCrack(string[] input, byte[] hash)
-    {
-        var sha256 = SHA256.Create();
-        
-        for (var i = 0; i < input.Length; i++)
-        {
-            if (CmpBytes(sha256.ComputeHash(Encoding.UTF8.GetBytes(input[i])), hash))
-            {
-                return input[i];
-            }
-        }
-        
-        return null;
-    }
-
-    public async Task<string?> GetResultAsync()
-    {
-        await Task.Run(() =>
-        {
-            foreach (Thread thread in threads)
-            {
-                thread.Join();
-            }
-        });
-
-        return Result;
-    }
-
-    public void Dispose()
-    {
-        Result = "";
-        Found = true;
-        
-        foreach (Thread thread in threads)
-        {
-            thread.Join();
-        }
     }
 }

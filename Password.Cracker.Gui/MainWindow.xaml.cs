@@ -1,71 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region usings
+
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using Microsoft.AspNetCore.SignalR.Client;
+
+#endregion
 
 namespace Password.Cracker.Gui
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        HubConnection connection;
+        #region Constants and Fields
 
-        private bool IsConnected => connection.State == HubConnectionState.Connected;
+        readonly HubConnection connection;
+
+        #endregion
 
         public MainWindow()
         {
             InitializeComponent();
-            
-            connection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:5189/ws")
-                .Build();
+
+            connection = new HubConnectionBuilder().WithUrl("http://localhost:5189/ws").Build();
 
             connection.Closed += async (error) =>
             {
                 await Task.Delay(1000);
                 await connection.StartAsync();
             };
-            
-            connection.On<string>("FoundPassword",
-                (pw) =>
-                {
-                    Dispatcher.Invoke(PwFound, pw);
-                });
-            connection.On<double>("StatusUpdate",
-                (value) =>
-                {
-                    Dispatcher.Invoke(StatusUpdate, value);
-                });
-            
-            
+
+            connection.On<string>("FoundPassword", (pw) => { Dispatcher.Invoke(PwFound, pw); });
+            connection.On<double>("StatusUpdate", (value) => { Dispatcher.Invoke(StatusUpdate, value); });
+
             connection.StartAsync().ContinueWith((_) => Connected());
-
         }
 
-        private void StatusUpdate(double perCent)
-        {
-            progressBar.Value = perCent;
-            resultLabel.Content = (perCent*100)+ " %";
-        }
-
-        private void PwFound(string pw)
-        {
-            resultLabel.Content = pw;
-        }
+        private bool IsConnected => connection.State == HubConnectionState.Connected;
 
         private void Connected()
         {
@@ -74,9 +47,24 @@ namespace Password.Cracker.Gui
                 Dispatcher.Invoke(Connected);
                 return;
             }
-            
-            statusLabel.Content = IsConnected ? "Connected" : "Unable to connect";
+
+            statusLabel.Content = IsConnected
+                ? "Connected"
+                : "Unable to connect";
         }
+
+        private void PwFound(string pw)
+        {
+            resultLabel.Content = pw;
+        }
+
+        private void StatusUpdate(double perCent)
+        {
+            progressBar.Value = perCent;
+            resultLabel.Content = (perCent * 100) + " %";
+        }
+
+        #region Event Handlers
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
@@ -84,13 +72,15 @@ namespace Password.Cracker.Gui
 
             string hash = hashLabel.Text;
             string alph = alpLabel.Text;
-            
+
             if (!int.TryParse(lenLabel.Text, out int len))
             {
-                return;
+                len = 0;
             }
 
             connection.SendAsync("Crack", hash, alph, len);
         }
+
+        #endregion
     }
 }

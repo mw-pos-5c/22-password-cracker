@@ -1,30 +1,41 @@
-﻿using System.Text;
+﻿#region usings
 
 using Password.Cracker.Utils;
+
+#endregion
 
 namespace Password.Cracker.Api.Services;
 
 public class CrackService
 {
+    #region Constants and Fields
+
     private CrackUtils? currentCrack;
+
+    #endregion
 
     public void Crack(string hash, string alph, int len)
     {
-        int threadCount = Environment.ProcessorCount;
         if (currentCrack != null) return;
+        int threadCount = Environment.ProcessorCount + 1;
+
         currentCrack = new CrackUtils(alph, len, hash, threadCount);
-        currentCrack.CrackAsync();
+
+        if (alph.Length + len == 0)
+        {
+            var wordlist = FabelwesenUtils.GetFabelwesen();
+            Console.WriteLine("Wordlist: " + wordlist.Length);
+            currentCrack.WordlistCrack(wordlist);
+        }
+        else
+        {
+            currentCrack.CrackAsync();
+        }
     }
 
-    public void StopCurrentAttempt()
+    public CrackUtils? GetCurrentCrackAttempt()
     {
-        if (currentCrack == null)
-        {
-            return;
-        }
-        
-        currentCrack.Dispose();
-        currentCrack = null;
+        return currentCrack;
     }
 
     public string? GetResult()
@@ -33,14 +44,20 @@ public class CrackService
         {
             return null;
         }
-        
+
         string result = currentCrack.Result;
         currentCrack = null;
         return result;
     }
 
-    public CrackUtils? GetCurrentCrackAttempt()
+    public void StopCurrentAttempt()
     {
-        return currentCrack;
+        if (currentCrack == null)
+        {
+            return;
+        }
+
+        currentCrack.Dispose();
+        currentCrack = null;
     }
 }
