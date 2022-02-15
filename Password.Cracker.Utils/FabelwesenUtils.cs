@@ -1,5 +1,7 @@
 ﻿#region usings
 
+using System.Linq;
+
 using HtmlAgilityPack;
 
 #endregion

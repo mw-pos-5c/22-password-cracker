@@ -1,6 +1,11 @@
 ﻿#region usings
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
 
 using Password.Cracker.Api.Hubs;
 using Password.Cracker.Utils;

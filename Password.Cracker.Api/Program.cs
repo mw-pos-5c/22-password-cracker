@@ -1,5 +1,9 @@
 #region usings
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 using Password.Cracker.Api.Hubs;
 using Password.Cracker.Api.Services;
 

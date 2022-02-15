@@ -1,4 +1,6 @@
-﻿namespace Password.Cracker.Api.Hubs;
+﻿using System.Threading.Tasks;
+
+namespace Password.Cracker.Api.Hubs;
 
 public interface ICrackerHub
 {

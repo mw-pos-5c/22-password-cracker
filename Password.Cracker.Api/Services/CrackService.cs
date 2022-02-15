@@ -1,5 +1,7 @@
 ﻿#region usings
 
+using System;
+
 using Password.Cracker.Utils;
 
 #endregion
