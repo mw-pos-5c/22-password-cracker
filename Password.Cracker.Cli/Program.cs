@@ -31,20 +31,21 @@ public class Program
         //pw = pw0;
 
         // pw1 - HTLGKR
-        length = 6;
-        alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper());
-        pw = pw1;
+        //length = 6;
+        //alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper());
+        //pw = pw1;
 
         // p2 - CoV19
-        //length = 5;
-        //alphabet = ShaUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper() + "abcdefghijklmnopqrstuvwxyz" + "0123456789");
-        //pw = pw2;
-        int threadCount = Environment.ProcessorCount;
+        length = 5;
+        alphabet = CrackUtils.GetBytes("abcdefghijklmnopqrstuvwxyz".ToUpper() + "abcdefghijklmnopqrstuvwxyz" + "0123456789");
+        pw = pw2;
+        
+        int threadCount = Environment.ProcessorCount+1;
         var crack = new CrackUtils(alphabet, length, pw, threadCount);
 
-        crack.Crack(0, 100, out int x);
+        //crack.Crack(0, 100, out int x);
 
-        /*
+        
         Task.Run(() =>
         {
             long last = 0;
@@ -77,7 +78,7 @@ public class Program
         Console.WriteLine(crack.Total);
         Console.WriteLine(crack.TotalHashed);
         
-*/
+
 
         //Console.WriteLine(crackFabel.WordlistCrack(FabelwesenUtils.GetFabelwesen(), pw3));
     }
